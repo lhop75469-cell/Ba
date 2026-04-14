@@ -1,31 +1,32 @@
-from flask import Flask, request, render_template_string
 import os
 import subprocess
+from flask import Flask, request, render_template_string
 
 app = Flask(__name__)
 
-# واجهة التحكم البسيطة
+# واجهة التحكم
 HTML_TEMPLATE = '''
 <!DOCTYPE html>
-<html>
+<html dir="rtl">
 <head>
-    <title>Bot Control Panel</title>
+    <title>لوحة تحكم البوتات</title>
     <style>
         body { font-family: sans-serif; text-align: center; background: #f4f4f9; padding: 50px; }
-        .card { background: white; padding: 20px; border-radius: 10px; display: inline-block; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
-        input { padding: 10px; width: 80%; margin: 10px 0; border: 1px solid #ddd; border-radius: 5px; }
-        button { padding: 10px 20px; background: #28a745; color: white; border: none; border-radius: 5px; cursor: pointer; }
+        .card { background: white; padding: 20px; border-radius: 10px; display: inline-block; box-shadow: 0 4px 6px rgba(0,0,0,0.1); width: 350px; }
+        input { padding: 12px; width: 90%; margin: 10px 0; border: 1px solid #ddd; border-radius: 5px; text-align: center; }
+        button { padding: 12px 25px; background: #28a745; color: white; border: none; border-radius: 5px; cursor: pointer; font-size: 16px; width: 95%; }
+        .status { margin-top: 15px; color: #007bff; font-weight: bold; }
     </style>
 </head>
 <body>
     <div class="card">
         <h2>إدارة استضافة البوتات</h2>
         <form method="POST">
-            <input type="text" name="token" placeholder="أدخل توكن البوت (تليجرام أو ديسكورد)" required><br>
-            <input type="text" name="admin_id" placeholder="الآيدي الخاص بك (اختياري)"><br>
-            <button type="submit">تشغيل البوت الآن</button>
+            <input type="text" name="token" placeholder="أدخل توكن البوت هنا" required>
+            <input type="text" name="admin_id" placeholder="الآيدي الخاص بك (اختياري)">
+            <button type="submit">تشغيل البوت الآن 🚀</button>
         </form>
-        {% if msg %}<p style="color: blue;">{{ msg }}</p>{% endif %}
+        {% if msg %}<div class="status">{{ msg }}</div>{% endif %}
     </div>
 </body>
 </html>
@@ -36,8 +37,15 @@ def index():
     msg = ""
     if request.method == 'POST':
         token = request.form.get('token')
-        # هنا تقدر تضيف المنطق الخاص بتشغيل البوت في الخلفية
-        msg = f"تم استلام التوكن: {token[:10]}... وجاري التشغيل!"
+        admin_id = request.form.get('admin_id')
+        
+        # تشغيل ملف البوت الأساسي مع إرسال التوكن كمتغير بيئة
+        try:
+            subprocess.Popen(["python", "bot_template.py", token, admin_id])
+            msg = "✅ تم تشغيل البوت بنجاح! اذهب لتجربته الآن."
+        except Exception as e:
+            msg = f"❌ حدث خطأ أثناء التشغيل: {str(e)}"
+            
     return render_template_string(HTML_TEMPLATE, msg=msg)
 
 if __name__ == "__main__":
