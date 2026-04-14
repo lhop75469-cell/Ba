@@ -1,24 +1,19 @@
-import discord
-from discord.ext import commands
+import telebot
 import sys
 
-# السيرفر بيمرر التوكن لهذا الملف كـ "Argument"
-TOKEN = sys.argv[1] 
+# استلام التوكن والآيدي من الواجهة
+if len(sys.argv) > 1:
+    BOT_TOKEN = sys.argv[1]
+    ADMIN_ID = sys.argv[2] if len(sys.argv) > 2 else None
+else:
+    print("No token provided!")
+    sys.exit()
 
-intents = discord.Intents.default()
-intents.message_content = True
-bot = commands.Bot(command_content="!", intents=intents)
+bot = telebot.TeleBot(BOT_TOKEN)
 
-@bot.event
-async def on_ready():
-    print(f'تم تشغيل البوت بنجاح: {bot.user.name}')
+@bot.message_handler(commands=['start'])
+def send_welcome(message):
+    bot.reply_to(message, "✅ أهلاً بك! بوتك الآن يعمل بنجاح من خلال سيرفر Render الخاص بك.")
 
-# هنا تقدر تضيف أوامر عامة لكل البوتات اللي بتستضيفها
-@bot.command()
-async def ping(ctx):
-    await ctx.send("Pong! البوت شغال 24 ساعة على سيرفرك")
-
-try:
-    bot.run(TOKEN)
-except Exception as e:
-    print(f"خطأ في التوكن: {e}")
+print("البوت بدأ العمل...")
+bot.infinity_polling()
